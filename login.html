@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - School ERP System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --bg-main: #f8fafc;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); display: flex; align-items: center; justify-content: center; height: 100vh; }
+
+    .login-card {
+      background: var(--surface);
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-header .logo-icon {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .login-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .login-header p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-with-icon i {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+    }
+
+    .input-with-icon input {
+      width: 100%;
+      padding: 12px 12px 12px 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .input-with-icon input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-login {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-login:hover {
+      background: var(--primary-dark);
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logo-icon"><i class="fa fa-graduation-cap"></i></div>
+      <h1>School ERP System</h1>
+      <p>লগইন করতে আপনার তথ্য প্রদান করুন</p>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>ইমেইল বা ইউজারনেম</label>
+        <div class="input-with-icon">
+          <i class="fa fa-envelope"></i>
+          <input type="text" id="username" placeholder="admin@example.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>পাসওয়ার্ড</label>
+        <div class="input-with-icon">
+          <i class="fa fa-lock"></i>
+          <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+      </div>
+
+      <button type="submit" id="submitBtn" class="btn-login">লগইন করুন</button>
+      <div class="error-msg" id="errorMsg">ইউজারনেম অথবা পাসওয়ার্ড ভুল হয়েছে!</div>
+    </form>
+  </div>
+
+  <script>
+    // পেজ লোড হওয়ার সাথে সাথেই চেক করবে ইউজার কি আগে থেকেই লগইন করা আছে কিনা
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      window.location.href = "index.html";
+    }
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMxVaZLMT90lslK_tuXaMeEb7TeiJZPtDkOumtg_LnhLlFUC8Sk-TZlxTiiQte7ArM/exec"; // আপনার গুগল স্ক্রিপ্ট থেকে পাওয়া ওয়েব অ্যাপ ইউআরএল এখানে বসাবেন
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      const errorElem = document.getElementById("errorMsg");
+      const submitBtn = document.getElementById("submitBtn");
+
+      errorElem.style.display = "none";
+      submitBtn.innerText = "যাচাই করা হচ্ছে...";
+      submitBtn.disabled = true;
+
+      // গুগল শিটে রিকোয়েস্ট পাঠানো
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ email: user, password: pass })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          // সফল হলে ব্রাউজারে সেভ করে রাখব যেন বারবার লগইন না করতে হয়
+          localStorage.setItem("isLoggedIn", "true");
+          window.location.href = "admin.html";
+        } else {
+          errorElem.style.display = "block";
+          submitBtn.innerText = "লগইন করুন";
+          submitBtn.disabled = false;
+        }
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        errorElem.innerText = "সার্ভারে সংযোগ স্থাপন করা যায়নি!";
+        errorElem.style.display = "block";
+        submitBtn.innerText = "লগইন করুন";
+        submitBtn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
