@@ -266,7 +266,15 @@ img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
 	   <div id="login-section-wrapper" style="display: none;">
 			<div class="login-section-short-wrapper">
 				<div class="login-nn-url-list">
-					<div><i class="fa-solid fa-school"></i><a href="login">এডমিন লগিন</a></div>
+					<div class="nav-right">
+      <!-- ১. যদি লগইন করা না থাকে, তবে এই লগইন লিংকটি দেখাবে -->
+      <a href="login" id="loginLink" class="btn-login">লগইন</a>
+
+      <!-- ২. যদি লগইন করা থাকে, তবে এই প্রোফাইল আইকনটি দেখাবে (প্রথমে লুকিয়ে থাকবে) -->
+      <a href="admin/index" id="profileContainer" class="profile-link" style="display: none;" title="অ্যাডমিন প্যানেলে যেতে ক্লিক করুন">
+        <img id="userProfileImg" src="https://i.pravatar.cc/100" alt="Admin Profile">
+      </a>
+    </div>
 					<div><i class="fa-solid fa-school"></i><a href="teacher-panel">শিক্ষক লগইন প্যানেল</a></div>
 					<div><i class="fa-solid fa-receipt"></i><a href="c-panel">হিসাবরক্ষক লগইন</a></div>
 			   </div>
@@ -1392,6 +1400,32 @@ const a=JSON.parse(document.getElementById("wp-emoji-settings").textContent),o=(
 //# sourceURL=wp-includes/js/wp-emoji-loader.min.js
 /* ]]> */
 </script>
+
+	   <script>
+    // পেজ লোড হওয়ার সাথে সাথেই চেক করবে ইউজার লগইন করা আছে কিনা
+    window.addEventListener("DOMContentLoaded", function() {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      const loginLink = document.getElementById("loginLink");
+      const profileContainer = document.getElementById("profileContainer");
+      const userProfileImg = document.getElementById("userProfileImg");
+
+      if (isLoggedIn === "true") {
+        // যদি লগইন করা থাকে: লগইন লিংক লুকিয়ে ফেলবে, প্রোফাইল দেখাবে
+        if(loginLink) loginLink.style.display = "none";
+        if(profileContainer) profileContainer.style.display = "flex";
+
+        // যদি ইউজার কাস্টম কোনো প্রোফাইল ছবি সেভ করে থাকে সেটি এখানে সেট করবে
+        const savedImage = localStorage.getItem("profileImgUrl");
+        if (savedImage) {
+          userProfileImg.src = savedImage;
+        }
+      } else {
+        // যদি লগইন করা না থাকে: প্রোফাইল লুকিয়ে ফেলবে, লগইন লিংক দেখাবে
+        if(loginLink) loginLink.style.display = "block";
+        if(profileContainer) profileContainer.style.display = "none";
+      }
+    });
+  </script>
 
 	 
 
