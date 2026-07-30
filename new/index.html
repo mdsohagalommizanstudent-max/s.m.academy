@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>মিনি প্রজেক্ট - ড্যাশবোর্ড</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- অ্যাপ কন্টেইনার (হেডার এবং বডি পাশাপাশি রাখার জন্য) -->
+  <div class="app-container">
+    
+    <!-- হেডার বা সাইডবার এখানে লোড হবে -->
+    <div id="header-placeholder"></div>
+
+    <!-- মূল পরিবর্তনশীল কন্টেন্ট -->
+    <main class="main-content">
+      <div class="card">
+        <h2>স্বাগতম ড্যাশবোর্ডে!</h2>
+        <p style="color: #64748b; margin: 10px 0 20px 0;">এটি হেডার-ফুটার আলাদা রেখে তৈরি করা একটি সিঙ্গেল পেজ স্ট্রাকচার। নিচে একটি ফর্মের উদাহরণ দেওয়া হলো:</p>
+        
+        <div class="form-group">
+          <label>আপনার নাম লিখুন:</label>
+          <input type="text" id="usernameInput" placeholder="এখানে লিখুন...">
+        </div>
+        <button class="btn" id="submitBtn">সাবমিট করুন</button>
+        
+        <p id="outputMsg" style="margin-top: 15px; font-weight: 600; color: #4f46e5;"></p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ফুটার এখানে লোড হবে -->
+  <div id="footer-placeholder"></div>
+
+  <!-- জাভাস্ক্রিপ্ট কোড: ফেচ এবং আইডি হ্যান্ডেলিং -->
+  <script>
+    // কম্পোনেন্ট লোড করার ফাংশন (Callback সহ)
+    function loadComponent(file, targetId, callback) {
+      fetch(file)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById(targetId).innerHTML = data;
+          if (callback) callback(); // ফাইল লোড হওয়া শেষ হলে এই ফাংশনটি রান হবে
+        })
+        .catch(err => console.error('Error loading file:', err));
+    }
+
+    // পেজ লোড হওয়ার পর হেডার এবং ফুটার যুক্ত করা
+    document.addEventListener("DOMContentLoaded", function() {
+      
+      // ১. হেডার লোড করা এবং হেডারের ভেতরের আইডি বা বাটনকে কন্ট্রোল করা
+      loadComponent('header.html', 'header-placeholder', function() {
+        // হেডার লোড হওয়ার পর এখন এর ভেতরের আইডিগুলো নিরাপদে কাজ করবে
+        const alertBtn = document.getElementById("menu-alert-btn");
+        if (alertBtn) {
+          alertBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            alert("হেডার থেকে সফলভাবে ইভেন্ট কাজ করছে!");
+          });
+        }
+      });
+
+      // ২. ফুটার লোড করা
+      loadComponent('footer.html', 'footer-placeholder');
+
+      // ৩. মেইন পেজের বাটন ইভেন্ট
+      const submitBtn = document.getElementById("submitBtn");
+      if (submitBtn) {
+        submitBtn.addEventListener("click", function() {
+          const name = document.getElementById("usernameInput").value;
+          const output = document.getElementById("outputMsg");
+          if (name.trim() !== "") {
+            output.innerText = `ধন্যবাদ, ${name}! আপনার তথ্য সফলভাবে গৃহিত হয়েছে।`;
+          } else {
+            output.innerText = "দয়া করে আগে নাম লিখুন!";
+            output.style.color = "#ef4444";
+          }
+        });
+      }
+
+    });
+  </script>
+</body>
+</html>
