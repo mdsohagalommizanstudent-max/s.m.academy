@@ -176,7 +176,7 @@
         if (data.status === "success") {
           // সফল হলে ব্রাউজারে সেভ করে রাখব যেন বারবার লগইন না করতে হয়
           localStorage.setItem("isLoggedIn", "true");
-          window.location.href = "admin.html";
+          window.location.href = "admin/admin";
         } else {
           errorElem.style.display = "block";
           submitBtn.innerText = "লগইন করুন";
