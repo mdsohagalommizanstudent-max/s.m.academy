@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School ERP Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Segoe UI",sans-serif;
+}
+body{
+  background:#f1f5f9;
+}
+/* TOPBAR */
+.topbar{
+  height:70px;
+  background:white;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 25px;
+  box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+.menu-btn{
+  font-size:25px;
+  color:#2563eb;
+  cursor:pointer;
+}
+.logo{
+  font-size:22px;
+  font-weight:700;
+  color:#0f172a;
+}
+.profile{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+.profile img{
+  height:42px;
+  width:42px;
+  border-radius:50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #2563eb;
+}
+
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  top:85px;
+  left:20px;
+  width:260px;
+  height:calc(100vh - 105px);
+  background:white;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  z-index:1100;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* BRAND */
+.brand{
+  padding:25px;
+  font-size:22px;
+  font-weight:bold;
+  color:#2563eb;
+  text-align:center;
+  border-bottom:1px solid #eee;
+}
+
+/* MENU AREA */
+.menu-area{
+  padding:15px;
+  overflow-y:auto;
+  flex:1;
+}
+.menu-area::-webkit-scrollbar{
+  width:5px;
+}
+.menu-area::-webkit-scrollbar-thumb{
+  background:#2563eb;
+  border-radius:10px;
+}
+.menu-area a{
+  display:flex;
+  align-items:center;
+  gap:15px;
+  padding:14px 18px;
+  margin-bottom:8px;
+  text-decoration:none;
+  color:#64748b;
+  border-radius:12px;
+  transition:.3s;
+  cursor: pointer;
+}
+.menu-area a i{
+  width:22px;
+}
+.menu-area a:hover,
+.menu-area a.active{
+  background:#2563eb;
+  color:white;
+}
+
+/* CONTENT */
+.content{
+  margin-left:310px;
+  padding:100px 30px;
+}
+
+/* CARDS */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:25px;
+  margin-top:30px;
+}
+.card{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card i{
+  font-size:40px;
+  color:#2563eb;
+}
+.card h3{
+  color:#64748b;
+  font-size:15px;
+}
+.number{
+  font-size:32px;
+  font-weight:bold;
+  color:#0f172a;
+}
+
+/* TABLE */
+.table-box{
+  background:white;
+  padding:25px;
+  margin-top:30px;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  overflow:auto;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:15px;
+  border-bottom:1px solid #eee;
+  text-align:left;
+}
+th{
+  color:#2563eb;
+  background:#eff6ff;
+}
+
+/* OVERLAY */
+.overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  z-index:1050;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{
+    left:-300px;
+    top:80px;
+  }
+  .sidebar.active{
+    left:15px;
+  }
+  .content{
+    margin-left:0;
+    padding:95px 20px;
+  }
+  .overlay.show{
+    display:block;
+  }
+  .logo{
+    font-size:18px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="menu-btn" onclick="openMenu()">
+    <i class="fa fa-bars"></i>
+  </div>
+
+  <div class="logo" id="topbarLogo">🏫 Smart School ERP</div>
+
+  <div class="profile">
+    <i class="fa fa-bell" style="cursor: pointer;"></i>
+    <!-- প্রোফাইল ছবি ক্লিক করলে বা চেঞ্জ করার অপশন -->
+    <img id="profileImg" src="https://i.pravatar.cc/100" alt="Profile" title="প্রোফাইল ছবি পরিবর্তন করতে ক্লিক করুন" onclick="changeProfileImage()">
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="brand" id="sidebarBrand">🏫 School ERP</div>
+
+  <div class="menu-area">
+    <a class="active"><i class="fa fa-home"></i> Dashboard</a>
+    <a><i class="fa fa-user-graduate"></i> Students</a>
+    <a><i class="fa fa-chalkboard-user"></i> Teachers</a>
+    <a><i class="fa fa-school"></i> Classes</a>
+    <a><i class="fa fa-book"></i> Subjects</a>
+    <a><i class="fa fa-calendar-check"></i> Attendance</a>
+    <a><i class="fa fa-money-bill"></i> Fees</a>
+    <a><i class="fa fa-file"></i> Results</a>
+    <a><i class="fa fa-id-card"></i> ID Card</a>
+    <a><i class="fa fa-bell"></i> Notice</a>
+    <a><i class="fa fa-user"></i> Users</a>
+    <a onclick="changeSiteSettings()"><i class="fa fa-gear"></i> Settings (Name Change)</a>
+    <a onclick="logout()"><i class="fa fa-right-from-bracket"></i> Logout</a>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- CONTENT -->
+<div class="content">
+  <h1>Dashboard</h1>
+  
+  <div class="cards">
+    <div class="card">
+      <div>
+        <h3>Students</h3>
+        <div class="number">1500</div>
+      </div>
+      <i class="fa fa-users"></i>
+    </div>
+    <div class="card">
+      <div>
+        <h3>Teachers</h3>
+        <div class="number">80</div>
+      </div>
+      <i class="fa fa-user-tie"></i>
+    </div>
+    <div class="card">
+      <div>
+        <h3>Classes</h3>
+        <div class="number">30</div>
+      </div>
+      <i class="fa fa-school"></i>
+    </div>
+    <div class="card">
+      <div>
+        <h3>Fees</h3>
+        <div class="number">95%</div>
+      </div>
+      <i class="fa fa-wallet"></i>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <h2>Recent Students</h2>
+    <br>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Roll</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Rahim Ahmed</td>
+        <td>Class 5</td>
+        <td>101</td>
+        <td>Active</td>
+      </tr>
+      <tr>
+        <td>Karim Hasan</td>
+        <td>Class 4</td>
+        <td>102</td>
+        <td>Active</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<script>
+  // ১. সিকিউরিটি চেক: লগইন করা না থাকলে সরাসরি ../login.html এ পাঠিয়ে দেবে
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "../login.html";
+  }
+
+  // ২. লগআউট ফাংশন (আপনার নির্দেশের পাথ অনুযায়ী)
+  function logout() {
+    if(confirm("আপনি কি সত্যিই লগআউট করতে চান?")) {
+      localStorage.removeItem("isLoggedIn");
+      window.location.href = "../login.html";
+    }
+  }
+
+  // ৩. সাইট লোড হওয়ার সময় সেভ করা নাম ও ছবি লোড করা
+  window.onload = function() {
+    const savedName = localStorage.getItem("siteName");
+    if(savedName) {
+      document.getElementById("topbarLogo").innerHTML = `<i class="fa fa-school"></i> ${savedName}`;
+      document.getElementById("sidebarBrand").innerText = savedName;
+    }
+
+    const savedImage = localStorage.getItem("profileImgUrl");
+    if(savedImage) {
+      document.getElementById("profileImg").src = savedImage;
+    }
+  }
+
+  // ৪. সাইটের নাম পরিবর্তন করার ফাংশন (Settings থেকে বা অটো)
+  function changeSiteSettings() {
+    let newName = prompt("নতুন সাইটের নাম লিখুন:", "Smart School ERP");
+    if(newName && newName.trim() !== "") {
+      localStorage.setItem("siteName", newName);
+      document.getElementById("topbarLogo").innerHTML = `<i class="fa fa-school"></i> ${newName}`;
+      document.getElementById("sidebarBrand").innerText = newName;
+      alert("সাইটের নাম সফলভাবে পরিবর্তন করা হয়েছে!");
+    }
+  }
+
+  // ৫. প্রোফাইল ছবি পরিবর্তন করার ফাংশন (ছবির লিংক বা ফোল্ডারের নাম দিয়ে)
+  function changeProfileImage() {
+    let newImgUrl = prompt("প্রোফাইল ছবির নতুন ইমেজ লিংক (Image URL) দিন:", "https://i.pravatar.cc/100");
+    if(newImgUrl && newImgUrl.trim() !== "") {
+      localStorage.setItem("profileImgUrl", newImgUrl);
+      document.getElementById("profileImg").src = newImgUrl;
+      alert("প্রোফাইল ছবি সফলভাবে আপডেট করা হয়েছে!");
+    }
+  }
+
+  function openMenu(){
+    document.getElementById("sidebar").classList.add("active");
+    document.getElementById("overlay").classList.add("show");
+  }
+
+  function closeMenu(){
+    document.getElementById("sidebar").classList.remove("active");
+    document.getElementById("overlay").classList.remove("show");
+  }
+</script>
+
+</body>
+</html>
