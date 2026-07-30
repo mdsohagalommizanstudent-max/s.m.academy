@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ড্যাশবোর্ড - স্কুল প্রজেক্ট</title>
+  <!-- আপনার সিএসএস ফাইল লিঙ্ক -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- ১. এখানে header.html ফাইলটি স্বয়ংক্রিয়ভাবে এসে বসে যাবে -->
+    <div id="header-placeholder"></div>
+
+    <!-- ২. মূল পেজের পরিবর্তনশীল কন্টেন্ট (যা শুধু এই পেজেই থাকবে) -->
+    <main class="main-content">
+      <div class="card">
+        <h2>স্বাগতম ড্যাশবোর্ডে!</h2>
+        <p>এটি আমাদের মূল হোম পেজ বা ড্যাশবোর্ড। হেডার এবং ফুটার আলাদা ফাইল থেকে ডাইনামিকালি লোড হয়েছে।</p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ৩. এখানে footer.html ফাইলটি স্বয়ংক্রিয়ভাবে এসে বসে যাবে -->
+  <div id="footer-placeholder"></div>
+
+
+  <!-- ৪. এই স্ক্রিপ্টটিই হেডার ও ফুটার ফাইলগুলোকে টেনে এনে উপরে বসিয়ে দেবে -->
+  <script>
+    function loadComponent(file, targetId) {
+      fetch(file)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById(targetId).innerHTML = data;
+        })
+        .catch(error => console.error('Error loading:', error));
+    }
+
+    // পেজ লোড হওয়ার সাথে সাথে হেডার ও ফুটার কল করা
+    document.addEventListener("DOMContentLoaded", function() {
+      loadComponent('header.html', 'header-placeholder');
+      loadComponent('footer.html', 'footer-placeholder');
+    });
+  </script>
+
+</body>
+</html>
