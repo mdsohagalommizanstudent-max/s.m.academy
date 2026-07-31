@@ -374,7 +374,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   </div>
 
   <div class="logo" id="topbarLogo">
-    <i class="fa fa-school"></i> Smart School ERP
+    <i class="fa fa-school"></i>
   </div>
 
   <div class="profile">
@@ -386,7 +386,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-  <div class="brand" id="sidebarBrand">🏫 School ERP</div>
+  <div class="brand" id="sidebarBrand">🏫 </div>
 
   <div class="menu-area">
     <a onclick="switchPage('dashboardPage', this)" class="active"><i class="fa fa-home"></i> Dashboard</a>
@@ -637,7 +637,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 <script>
   // 🔗 আপনার নতুন গুগল অ্যাপস স্ক্রিপ্ট (Web App URL) এখানে বসান
-  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRLP7YJZUaHf1pqzxI3UJ65v__EaTBYSgeBsgG73GhXBq0rzTxYmIwUOcXtoUSdN4/exec";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcnkFqFgCwVwYU9jQejN6-BOTzxQR1duHBcRSm3h9uKh3tXoY7sNMbaJzIwNxmo0Tt/exec";
 
   let uploadedBase64Image = "";
 
@@ -709,7 +709,70 @@ input:checked + .slider:before { transform: translateX(22px); }
       .catch(err => console.error("গুগল শিট থেকে ডেটা আনা সম্ভব হয়নি:", err));
   }
 
-  // ৬. Sheet2 এবং ড্রাইভে ছবি ও ডেটা সেভ করার ফাংশন
+  // ৫. Sheet2 থেকে ডেটা ও ছবি ইনস্ট্যান্ট লোড করার ফাংশন (লোকাল স্টোরেজ ক্যাশ সহ)
+  window.onload = function() {
+    // ক. প্রথমে লোকাল স্টোরেজ থেকে ক্যাশ করা লোগো ইনস্ট্যান্ট দেখাবে
+    const cachedLogo = localStorage.getItem("schoolLogoCache");
+    if (cachedLogo) {
+      document.getElementById("profileImg").src = cachedLogo;
+      document.getElementById("schoolLogoPreview").src = cachedLogo;
+    }
+
+    // খ. প্রথমে লোকাল স্টোরেজ থেকে ক্যাশ করা টেক্সট/সেটিংস ইনস্ট্যান্ট বসিয়ে দেবে (কোনো দেরি ছাড়াই)
+    const cachedData = localStorage.getItem("schoolDataCache");
+    if (cachedData) {
+      applySettingsToUI(JSON.parse(cachedData));
+    }
+    
+    // গ. ব্যাকগ্রাউন্ডে গুগল শিট থেকে লেটেস্ট ডেটা নিয়ে এসে আপডেট করে নেবে
+    fetchDataFromGoogleSheet();
+  }
+
+  function fetchDataFromGoogleSheet() {
+    if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("আপনার_নতুন")) {
+      console.warn("গুগল অ্যাপস স্ক্রিপ্ট লিঙ্ক সেট করা হয়নি!");
+      return;
+    }
+
+    fetch(GOOGLE_SCRIPT_URL)
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          // ব্রাউজারে লেটেস্ট ডেটা ক্যাশ করে রাখা যেন পরবর্তীতে ইনস্ট্যান্ট লোড হয়
+          localStorage.setItem("schoolDataCache", JSON.stringify(data));
+          
+          if (data.logoUrl) {
+            localStorage.setItem("schoolLogoCache", data.logoUrl);
+          }
+
+          // ইউআই বা ইনপুটে ডেটাগুলো বসানো
+          applySettingsToUI(data);
+        }
+      })
+      .catch(err => console.error("গুগল শিট থেকে ডেটা আনা সম্ভব হয়নি:", err));
+  }
+
+  // হেল্পার ফাংশন: ডেটাগুলো ইনপুট ফিল্ড ও টপবারে বসানোর জন্য
+  function applySettingsToUI(data) {
+    if (data.siteName) {
+      document.getElementById("topbarLogo").innerHTML = `<i class="fa fa-school"></i> ${data.siteName}`;
+      document.getElementById("sidebarBrand").innerText = data.siteName;
+      document.getElementById("inputSchoolName").value = data.siteName;
+    }
+    if (data.officialEmail) document.getElementById("inputOfficialEmail").value = data.officialEmail;
+    if (data.contactPhone) document.getElementById("inputContactPhone").value = data.contactPhone;
+    if (data.mobileNo) document.getElementById("inputMobileNo").value = data.mobileNo;
+    if (data.eiin) document.getElementById("inputEiin").value = data.eiin;
+    if (data.estYear) document.getElementById("inputEstYear").value = data.estYear;
+    if (data.address) document.getElementById("inputAddress").value = data.address;
+    
+    if (data.logoUrl) {
+      document.getElementById("profileImg").src = data.logoUrl;
+      document.getElementById("schoolLogoPreview").src = data.logoUrl;
+    }
+  }
+  
+  // ৬. Sheet2 এ দ্রুত ডেটা ও ছবি সেভ করার ফাংশন
   function handleSettingsSave(e) {
     e.preventDefault();
 
@@ -738,15 +801,19 @@ input:checked + .slider:before { transform: translateX(22px); }
       saveBtn.innerHTML = `<i class="fa fa-save"></i> পরিবর্তন সেভ করুন`;
 
       if (res.status === "success") {
+        // নতুন ডেটা সাথে সাথে লোকাল ক্যাশেও আপডেট করে নেওয়া
+        localStorage.setItem("schoolDataCache", JSON.stringify(formData));
+        
         document.getElementById("topbarLogo").innerHTML = `<i class="fa fa-school"></i> ${formData.siteName}`;
         document.getElementById("sidebarBrand").innerText = formData.siteName;
 
         if (res.logoUrl) {
+          localStorage.setItem("schoolLogoCache", res.logoUrl);
           document.getElementById("profileImg").src = res.logoUrl;
           document.getElementById("schoolLogoPreview").src = res.logoUrl;
         }
 
-        alert("গুগল শিটের Sheet2 ট্যাবে তথ্য সফলভাবে সংরক্ষিত হয়েছে!");
+        alert("সফলভাবে সেভ হয়েছে!");
         uploadedBase64Image = ""; // রিসেট
       } else {
         alert("সংরক্ষণে সমস্যা হয়েছে: " + res.message);
@@ -755,19 +822,19 @@ input:checked + .slider:before { transform: translateX(22px); }
     .catch(err => {
       saveBtn.disabled = false;
       saveBtn.innerHTML = `<i class="fa fa-save"></i> পরিবর্তন সেভ করুন`;
-      alert("ত্রুটি ঘটেছে! গুগল স্ক্রিপ্ট লিঙ্ক ও কানেকশন চেক করুন।");
+      alert("ত্রুটি ঘটেছে! সংযোগ চেক করুন।");
       console.error(err);
     });
   }
-
-  // ৭. ছবি আপলোড প্রিভিউ ও Base64 কনভার্ট
+  
+  // ৭. ছবি ইনস্ট্যান্ট প্রিভিউ ও স্টোর করার ফাংশন
   function previewImage(event) {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById('schoolLogoPreview').src = e.target.result;
-        uploadedBase64Image = e.target.result; // সেভ করার জন্য গ্লোবাল ভ্যারিয়েবলে স্টোর
+        uploadedBase64Image = e.target.result; 
       }
       reader.readAsDataURL(file);
     }
