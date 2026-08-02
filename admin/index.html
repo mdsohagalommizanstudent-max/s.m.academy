@@ -15,6 +15,7 @@
 body{
   background:#f1f5f9;
   color:#0f172a;
+  overflow-x: hidden;
 }
 .topbar{
   height:70px;
@@ -113,6 +114,7 @@ body{
 .content{
   margin-left:310px;
   padding:100px 30px 40px;
+  width: calc(100% - 310px);
 }
 .section-page { display: none; }
 .section-page.active { display: block; }
@@ -184,7 +186,7 @@ body{
   color: #2563eb;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-.settings-content { padding: 30px; }
+.settings-content { padding: 30px; width: 100%; overflow: hidden; }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 .panel-header {
@@ -221,8 +223,72 @@ body{
   display: flex; align-items: center; gap: 20px; padding: 15px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;
 }
 .logo-preview {
-  width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #e2e8f0; display: none;
+  width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #e2e8f0; display: none;
 }
+
+/* টেবিল স্কেল এবং রেসপনসিভ র‍্যাপার ফিক্স */
+.table-scale-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+.data-table th, .data-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.data-table th { background: #f8fafc; color: #475569; }
+
+.action-btns {
+  display: inline-flex;
+  gap: 8px;
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-info { background: #0ea5e9; color: white; }
+.btn-warning { background: #f59e0b; color: white; }
+.btn-danger { background: #ef4444; color: white; }
+
+/* Dynamic Gallery Item Card */
+.gallery-item-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 15px;
+  position: relative;
+}
+.gallery-item-card .remove-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .overlay{
   display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:1050;
 }
@@ -234,7 +300,7 @@ body{
 @media(max-width:768px){
   .sidebar{ left:-300px; top:80px; }
   .sidebar.active{ left:15px; }
-  .content{ margin-left:0; padding:95px 20px; }
+  .content{ margin-left:0; padding:95px 15px; width: 100%; }
   .overlay.show{ display:block; }
   .menu-btn { display: block; }
 }
@@ -266,6 +332,7 @@ body{
     <a><i class="fa fa-bell"></i> Notice</a>
     <a><i class="fa fa-user"></i> Users</a>
     <a onclick="switchPage('settingsPage', this)"><i class="fa fa-sliders"></i> System Settings</a>
+    <a onclick="switchPage('galleryContentPage', this)"><i class="fa fa-images"></i> Photo Gallery & Content</a>
     <a onclick="logout()"><i class="fa fa-right-from-bracket"></i> Logout</a>
   </div>
 </div>
@@ -281,6 +348,116 @@ body{
       <div class="card"><div><h3>Teachers</h3><div class="number">80</div></div><i class="fa fa-user-tie"></i></div>
       <div class="card"><div><h3>Classes</h3><div class="number">30</div></div><i class="fa fa-school"></i></div>
       <div class="card"><div><h3>Fees</h3><div class="number">95%</div></div><i class="fa fa-wallet"></i></div>
+    </div>
+  </div>
+
+  <!-- Photo Gallery & Content Page -->
+  <div id="galleryContentPage" class="section-page">
+    <div class="page-header">
+      <h1>Photo Gallery & Content Management</h1>
+      <p style="color: #64748b; font-size: 13px;">কলেজের ছবি, সভাপতি, অধ্যক্ষ, শিক্ষক বাণী, ইতিহাস এবং ইচ্ছামতো অসংখ্য গ্যালারি ছবি ও বিস্তারিত পরিচালনা করুন</p>
+    </div>
+
+    <div class="settings-container" style="grid-template-columns: 1fr;">
+      <div class="settings-content">
+        <form id="contentForm" onsubmit="handleContentSave(event)">
+          <input type="hidden" id="editIndex" value="-1">
+          
+          <div class="form-grid">
+            <!-- কলেজের মূল ছবি -->
+            <div class="form-group full-width">
+              <label style="font-size: 15px; color: #2563eb;">কলেজ / বিদ্যালয়ের মূল ছবি</label>
+              <input type="file" accept="image/*" onchange="encodeImage(event, 'collegeImgPreview', 'collegeImgBase64')">
+              <input type="hidden" id="collegeImgBase64">
+              <img id="collegeImgPreview" class="logo-preview" style="margin-top:10px;">
+            </div>
+
+            <!-- সভাপতির তথ্য -->
+            <div class="form-group">
+              <label>সভাপতির নাম</label>
+              <input type="text" id="presName" required>
+            </div>
+            <div class="form-group">
+              <label>সভাপতির ছবি</label>
+              <input type="file" accept="image/*" onchange="encodeImage(event, 'presImgPreview', 'presImgBase64')">
+              <input type="hidden" id="presImgBase64">
+              <img id="presImgPreview" class="logo-preview" style="margin-top:10px;">
+            </div>
+            <div class="form-group full-width">
+              <label>সভাপতির সম্পর্কে বিস্তারিত</label>
+              <textarea id="presDetails" rows="3" required></textarea>
+            </div>
+
+            <!-- অধ্যক্ষের তথ্য -->
+            <div class="form-group">
+              <label>অধ্যক্ষর নাম</label>
+              <input type="text" id="prinName" required>
+            </div>
+            <div class="form-group">
+              <label>অধ্যক্ষর ছবি</label>
+              <input type="file" accept="image/*" onchange="encodeImage(event, 'prinImgPreview', 'prinImgBase64')">
+              <input type="hidden" id="prinImgBase64">
+              <img id="prinImgPreview" class="logo-preview" style="margin-top:10px;">
+            </div>
+            <div class="form-group full-width">
+              <label>অধ্যক্ষর সম্পর্কে বিস্তারিত</label>
+              <textarea id="prinDetails" rows="3" required></textarea>
+            </div>
+
+            <!-- শিক্ষক বাণী -->
+            <div class="form-group full-width">
+              <label>শিক্ষক বাণী (শিরোনাম)</label>
+              <input type="text" id="teacherSpeech" placeholder="যেমন: শিক্ষকের বাণী" required>
+            </div>
+            <div class="form-group full-width">
+              <label>শিক্ষক বাণী সম্পর্কে বিস্তারিত</label>
+              <textarea id="teacherSpeechDetails" rows="3" required></textarea>
+            </div>
+
+            <!-- বিদ্যালয়ের ইতিহাস -->
+            <div class="form-group full-width">
+              <label>বিদ্যালয়ের ইতিহাস</label>
+              <textarea id="schoolHistory" rows="4" required></textarea>
+            </div>
+
+            <!-- ডায়নামিক গ্যালারি ছবি ও বিবরণী -->
+            <div class="form-group full-width">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <label style="font-size: 16px; font-weight: bold; color: #2563eb; margin: 0;">গ্যালারি ছবি ও বিবরণী (ইচ্ছামতো যোগ করুন)</label>
+                <button type="button" class="btn-primary" onclick="addGalleryItemRow()"><i class="fa fa-plus"></i> নতুন ছবি যোগ করুন</button>
+              </div>
+              
+              <div id="galleryItemsContainer"></div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-secondary" onclick="resetContentForm()">রিসেট করুন</button>
+            <button type="submit" id="contentSaveBtn" class="btn-primary"><i class="fa fa-save"></i> ডেটা সেভ করুন</button>
+          </div>
+        </form>
+
+        <div style="margin-top: 40px;">
+          <h2 style="font-size: 18px; margin-bottom: 15px;">সংরক্ষিত তথ্য তালিকা (View, Edit & Delete)</h2>
+          <!-- টেবিল বাইরে যাওয়া রোধ করার জন্য র‍্যাপার -->
+          <div class="table-scale-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ক্রম</th>
+                  <th>কলেজের ছবি</th>
+                  <th>সভাপতি</th>
+                  <th>অধ্যক্ষ</th>
+                  <th>মোট গ্যালারি ছবি</th>
+                  <th>কার্যক্রম</th>
+                </tr>
+              </thead>
+              <tbody id="contentTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -386,7 +563,7 @@ body{
     btnElement.classList.add('active');
   }
 
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxtEGbioa_Ex5ZqGC7a4WagAvGjd2aucfsl5vClxOd0pQAGOvZkw8D-318bsOIGiHNO/exec"; // আপনার সঠিক ওয়েব অ্যাপ ইউআরএল এখানে বসান
+  const scriptURL = "https://script.google.com/macros/s/AKfycbx94rJ7m9-eSKic5GW48qDtGBD39fuPwft4Vwpbh2cMScQdp1MDmUl-gmduN3VWuIE/exec";
 
   function applyDataToUI(data) {
     if(!data) return;
@@ -419,6 +596,7 @@ body{
     if(cachedData) {
       applyDataToUI(JSON.parse(cachedData));
     }
+    loadContentTable();
     fetchSettingsFromServer();
   }
 
@@ -434,60 +612,307 @@ body{
       .catch(err => console.log("Sync error", err));
   }
 
-  // ছবিকে ব্রাউজারে রিসাইজ ও কমপ্রেস করে রেডি করা (যাতে কোনো সাইজ এরর না আসে)
   function processImageFile(event) {
     const file = event.target.files[0];
     if(!file) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // ছবির সাইজ অপ্টিমাইজ করে ছোট করে নেওয়া (ম্যাক্স সাইজ ১৫০x১৫০ পিক্সেল লোগোর জন্য পারফেক্ট)
-        let width = img.width;
-        let height = img.height;
-        const max_size = 150;
-        
-        if (width > height) {
-          if (width > max_size) {
-            height *= max_size / width;
-            width = max_size;
-          }
-        } else {
-          if (height > max_size) {
-            width *= max_size / height;
-            height = max_size;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        // কম্প্রেসড ইমেজ স্ট্রিং তৈরি
-        window.currentProfileImgUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-        const sLogo = document.getElementById('schoolLogoPreview');
-        sLogo.src = window.currentProfileImgUrl;
-        sLogo.style.display = "block";
-
-        const pImg = document.getElementById('profileImg');
-        pImg.src = window.currentProfileImgUrl;
-        pImg.style.display = "block";
-
-        alert("ছবি সফলভাবে সিলেক্ট হয়েছে! এখন 'পরিবর্তন সেভ করুন' বাটনে ক্লিক করুন।");
-      }
-      img.src = e.target.result;
+      resizeImageAndCallback(e.target.result, 150, 150, function(compressedData) {
+        window.currentProfileImgUrl = compressedData;
+        document.getElementById('schoolLogoPreview').src = compressedData;
+        document.getElementById('schoolLogoPreview').style.display = "block";
+        document.getElementById('profileImg').src = compressedData;
+        document.getElementById('profileImg').style.display = "block";
+        alert("লোগো সফলভাবে সিলেক্ট হয়েছে!");
+      });
     }
     reader.readAsDataURL(file);
   }
 
+  function encodeImage(event, previewId, hiddenInputId) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      resizeImageAndCallback(e.target.result, 300, 300, function(compressedData) {
+        document.getElementById(hiddenInputId).value = compressedData;
+        const prev = document.getElementById(previewId);
+        prev.src = compressedData;
+        prev.style.display = "block";
+      });
+    }
+    reader.readAsDataURL(file);
+  }
+
+  function resizeImageAndCallback(base64Str, maxWidth, maxHeight, callback) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > height) {
+        if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+      } else {
+        if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      callback(canvas.toDataURL('image/jpeg', 0.8));
+    }
+    img.src = base64Str;
+  }
+
+  let galleryItemCount = 0;
+  function addGalleryItemRow(data = {img: '', title: '', desc: ''}) {
+    galleryItemCount++;
+    const id = galleryItemCount;
+    const container = document.getElementById('galleryItemsContainer');
+
+    const card = document.createElement('div');
+    card.className = 'gallery-item-card';
+    card.id = `galleryRow_${id}`;
+
+    card.innerHTML = `
+      <button type="button" class="remove-btn" onclick="removeGalleryItemRow(${id})"><i class="fa fa-times"></i> ডিলিট</button>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>ছবি সিলেক্ট করুন</label>
+          <input type="file" accept="image/*" onchange="encodeGalleryItemImage(event, ${id})">
+          <input type="hidden" class="g-item-img" id="gImgBase64_${id}" value="${data.img || ''}">
+          <img id="gImgPreview_${id}" class="logo-preview" src="${data.img || ''}" style="margin-top:10px; display: ${data.img ? 'block' : 'none'};">
+        </div>
+        <div class="form-group">
+          <label>ছবির হেডার / শিরোনাম</label>
+          <input type="text" class="g-item-title" placeholder="যেমন: বার্ষিক ক্রীড়া প্রতিযোগিতা" value="${data.title || ''}">
+        </div>
+        <div class="form-group full-width" style="margin-bottom:0;">
+          <label>ছবির সম্পর্কে বিস্তারিত বিবরণ</label>
+          <textarea class="g-item-desc" rows="2" placeholder="বিস্তারিত এখানে লিখুন...">${data.desc || ''}</textarea>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  }
+
+  function removeGalleryItemRow(id) {
+    const row = document.getElementById(`galleryRow_${id}`);
+    if(row) row.remove();
+  }
+
+  function encodeGalleryItemImage(event, id) {
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      resizeImageAndCallback(e.target.result, 400, 400, function(compressedData) {
+        document.getElementById(`gImgBase64_${id}`).value = compressedData;
+        const prev = document.getElementById(`gImgPreview_${id}`);
+        prev.src = compressedData;
+        prev.style.display = "block";
+      });
+    }
+    reader.readAsDataURL(file);
+  }
+
+ function handleContentSave(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById("contentSaveBtn");
+    saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> সেভ হচ্ছে...';
+    saveBtn.disabled = true;
+
+    const editIndex = document.getElementById("editIndex").value;
+    
+    const galleryItems = [];
+    document.querySelectorAll('.gallery-item-card').forEach(card => {
+      const img = card.querySelector('.g-item-img').value;
+      const title = card.querySelector('.g-item-title').value;
+      const desc = card.querySelector('.g-item-desc').value;
+      if(img || title || desc) {
+        galleryItems.push({ img, title, desc });
+      }
+    });
+
+    const contentItem = {
+      collegeImg: document.getElementById("collegeImgBase64").value,
+      presName: document.getElementById("presName").value,
+      presImg: document.getElementById("presImgBase64").value,
+      presDetails: document.getElementById("presDetails").value,
+      prinName: document.getElementById("prinName").value,
+      prinImg: document.getElementById("prinImgBase64").value,
+      prinDetails: document.getElementById("prinDetails").value,
+      teacherSpeech: document.getElementById("teacherSpeech").value,
+      teacherSpeechDetails: document.getElementById("teacherSpeechDetails").value,
+      schoolHistory: document.getElementById("schoolHistory").value,
+      galleryItems: galleryItems,
+      editIndex: editIndex // কোন রো এডিট হচ্ছে তা সার্ভারে পাঠানোর জন্য
+    };
+
+    let list = JSON.parse(localStorage.getItem("erp_gallery_contents") || "[]");
+
+    if(editIndex === "-1") {
+      list.push(contentItem);
+    } else {
+      if(!contentItem.collegeImg) contentItem.collegeImg = list[editIndex].collegeImg;
+      if(!contentItem.presImg) contentItem.presImg = list[editIndex].presImg;
+      if(!contentItem.prinImg) contentItem.prinImg = list[editIndex].prinImg;
+      list[editIndex] = contentItem;
+      document.getElementById("editIndex").value = "-1";
+    }
+
+    localStorage.setItem("erp_gallery_contents", JSON.stringify(list));
+
+    // সরাসরি গুগল শিটে (Sheet3) পাঠানো
+    fetch(scriptURL, {
+      method: 'POST',
+      body: JSON.stringify(contentItem)
+    })
+    .then(res => res.json())
+    .then(data => {
+      saveBtn.innerHTML = '<i class="fa fa-save"></i> ডেটা সেভ করুন';
+      saveBtn.disabled = false;
+      if(data.status === "success") {
+        alert("সফলভাবে সংরক্ষিত এবং শিট আপডেট হয়েছে!");
+        resetContentForm();
+        loadContentTable();
+      } else {
+        alert("শিটে সেভ করতে সমস্যা হয়েছে: " + data.message);
+      }
+    })
+    .catch(err => {
+      saveBtn.innerHTML = '<i class="fa fa-save"></i> ডেটা সেভ করুন';
+      saveBtn.disabled = false;
+      alert("নেটওয়ার্ক সমস্যা! লোকালভাবে সেভ হয়েছে।");
+      resetContentForm();
+      loadContentTable();
+    });
+  }
+  function loadContentTable() {
+    let list = JSON.parse(localStorage.getItem("erp_gallery_contents") || "[]");
+    const tbody = document.getElementById("contentTableBody");
+    tbody.innerHTML = "";
+
+    if(list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b;">কোনো ডেটা পাওয়া যায়নি</td></tr>`;
+      return;
+    }
+
+    list.forEach((item, index) => {
+      let collegeImgHtml = item.collegeImg ? `<img src="${item.collegeImg}" style="width:40px; height:40px; object-fit:cover; border-radius:6px;">` : 'নেই';
+      let totalGalleryImages = item.galleryItems ? item.galleryItems.length : 0;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${collegeImgHtml}</td>
+          <td>${item.presName}</td>
+          <td>${item.prinName}</td>
+          <td><span style="background:#e0e7ff; color:#3730a3; padding:4px 10px; border-radius:12px; font-weight:bold;">${totalGalleryImages} টি</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-sm btn-info" onclick="viewContent(${index})"><i class="fa fa-eye"></i></button>
+              <button class="btn-sm btn-warning" onclick="editContent(${index})"><i class="fa fa-pen"></i></button>
+              <button class="btn-sm btn-danger" onclick="deleteContent(${index})"><i class="fa fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+  }
+
+  function viewContent(index) {
+    let list = JSON.parse(localStorage.getItem("erp_gallery_contents") || "[]");
+    let item = list[index];
+    let galleryDetails = (item.galleryItems || []).map((g, i) => `\n ${i+1}. [${g.title || 'শিরোনামহীন'}]: ${g.desc || 'বিবরণ নেই'}`).join('');
+    alert(`--- বিস্তারিত বিবরণ ---\nসভাপতি: ${item.presName}\nঅধ্যক্ষ: ${item.prinName}\nবাণী: ${item.teacherSpeech}\nইতিহাস: ${item.schoolHistory}\n\n--- গ্যালারি ছবি তালিকা (${item.galleryItems ? item.galleryItems.length : 0}টি) ---${galleryDetails}`);
+  }
+
+  function editContent(index) {
+    let list = JSON.parse(localStorage.getItem("erp_gallery_contents") || "[]");
+    let item = list[index];
+    
+    document.getElementById("editIndex").value = index;
+    document.getElementById("presName").value = item.presName;
+    document.getElementById("presDetails").value = item.presDetails;
+    document.getElementById("prinName").value = item.prinName;
+    document.getElementById("prinDetails").value = item.prinDetails;
+    document.getElementById("teacherSpeech").value = item.teacherSpeech;
+    document.getElementById("teacherSpeechDetails").value = item.teacherSpeechDetails;
+    document.getElementById("schoolHistory").value = item.schoolHistory;
+    
+    if(item.collegeImg) {
+      document.getElementById("collegeImgBase64").value = item.collegeImg;
+      document.getElementById("collegeImgPreview").src = item.collegeImg;
+      document.getElementById("collegeImgPreview").style.display = "block";
+    }
+    if(item.presImg) {
+      document.getElementById("presImgBase64").value = item.presImg;
+      document.getElementById("presImgPreview").src = item.presImg;
+      document.getElementById("presImgPreview").style.display = "block";
+    }
+    if(item.prinImg) {
+      document.getElementById("prinImgBase64").value = item.prinImg;
+      document.getElementById("prinImgPreview").src = item.prinImg;
+      document.getElementById("prinImgPreview").style.display = "block";
+    }
+
+    document.getElementById('galleryItemsContainer').innerHTML = "";
+    galleryItemCount = 0;
+    if(item.galleryItems && item.galleryItems.length > 0) {
+      item.galleryItems.forEach(gItem => { addGalleryItemRow(gItem); });
+    }
+
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+function deleteContent(index) {
+    if(confirm("আপনি কি নিশ্চিত এটি ডিলিট করতে চান?")) {
+      let list = JSON.parse(localStorage.getItem("erp_gallery_contents") || "[]");
+      
+      // শিটে পাঠানোর জন্য এডিট ইনডেক্স সেট করা (যেহেতু শিটের রো হলো index + 2)
+      const deletePayload = {
+        action: "delete",
+        editIndex: index
+      };
+
+      // লোকাল স্টোরেজ থেকে ডিলিট
+      list.splice(index, 1);
+      localStorage.setItem("erp_gallery_contents", JSON.stringify(list));
+      loadContentTable();
+
+      // গুগল শিট থেকে রো রিমুভ করার জন্য রিকোয়েস্ট পাঠানো
+      fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify(deletePayload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.status === "success") {
+          console.log("গুগল শিট থেকেও সফলভাবে রো ডিলিট হয়েছে!");
+        } else {
+          console.log("শিট থেকে ডিলিট করতে সমস্যা হয়েছে: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.log("নেটওয়ার্ক সমস্যা! শিটে সিঙ্ক হয়নি।");
+      });
+    }
+  }
+
+  function resetContentForm() {
+    document.getElementById("contentForm").reset();
+    document.getElementById("editIndex").value = "-1";
+    document.getElementById("collegeImgPreview").style.display = "none";
+    document.getElementById("presImgPreview").style.display = "none";
+    document.getElementById("prinImgPreview").style.display = "none";
+    document.getElementById("galleryItemsContainer").innerHTML = "";
+    galleryItemCount = 0;
+  }
+
   function handleSettingsSave(e) {
     e.preventDefault();
-    
     const saveBtn = document.getElementById("saveBtn");
     saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> সেভ হচ্ছে...';
     saveBtn.disabled = true;
